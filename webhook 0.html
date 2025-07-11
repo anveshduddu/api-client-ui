@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client 🚀</title>
+    
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root, [data-bs-theme="dark"] {
+            --bg-color: #212529;
+            --text-color: #f8f9fa;
+            --card-bg: #2b3035;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: #343a40;
+            --history-hover-bg: rgba(255, 255, 255, 0.05);
+            --history-active-bg: rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        [data-bs-theme="light"] {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --input-bg: #f1f3f5;
+            --history-hover-bg: #e9ecef;
+            --history-active-bg: rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        body { 
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+        .page-wrapper {
+            display: flex;
+            height: 100vh;
+            padding-top: 60px; /* Space for fixed navbar */
+        }
+        
+        /* --- Top Navbar --- */
+        .navbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .dropdown-menu {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        .dropdown-item {
+            color: var(--text-color);
+        }
+        .dropdown-item:hover {
+            background-color: var(--history-hover-bg);
+        }
+
+        /* --- History Sidebar --- */
+        #history-sidebar-container {
+            width: 380px;
+            flex-shrink: 0;
+            transition: margin-left 0.35s ease-in-out, background-color 0.3s ease;
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            background-color: var(--bg-color);
+        }
+        #history-sidebar-container.collapsed {
+            margin-left: -380px;
+        }
+        #history-sidebar {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .history-item {
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background-color 0.2s, border-left-color 0.2s;
+            background-color: transparent;
+            color: var(--text-color);
+        }
+        .history-item:hover {
+            background-color: var(--history-hover-bg);
+            border-left-color: var(--bs-primary);
+        }
+        .history-item.active {
+            background-color: var(--history-active-bg);
+            border-left-color: var(--bs-primary);
+        }
+        .history-item .method { font-weight: bold; width: 65px; text-align: center; }
+        .history-item .url { word-break: break-all; }
+        .method-GET { color: var(--bs-success); }
+        .method-POST { color: var(--bs-warning); }
+        .method-PUT, .method-PATCH { color: var(--bs-info); }
+        .method-DELETE { color: var(--bs-danger); }
+
+        /* --- Main Content --- */
+        #main-content {
+            flex-grow: 1;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            padding: 1rem;
+            transition: all 0.35s ease-in-out;
+        }
+        .card {
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn { transition: all 0.2s ease-in-out; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+        #json-response, #body-input, #curl-input, .form-control, .form-select { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 .25rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+        .table-responsive { max-height: 60vh; }
+        .accordion-button {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        .accordion-button:not(.collapsed) { 
+            background-color: rgba(var(--bs-primary-rgb), 0.2);
+            color: var(--text-color);
+        }
+        .accordion-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* --- Webhook Status Pill --- */
+        #webhook-status-pill .bi-arrow-repeat.spinning {
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid">
+            <button class="btn btn-outline-secondary me-3" id="sidebar-toggle-btn" title="Toggle Sidebar">
+                <i class="bi bi-layout-sidebar-inset-reverse"></i>
+            </button>
+            <a class="navbar-brand" href="#">API Client</a>
+            
+            <div id="webhook-status-pill" class="d-none badge rounded-pill text-bg-primary p-2 ms-auto me-3 d-flex align-items-center">
+                <i class="bi bi-arrow-repeat me-2"></i>
+                <span id="webhook-timer"></span>
+                <button class="btn-close btn-close-white ms-2" id="stop-webhook-btn" aria-label="Stop"></button>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear-fill"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item d-flex align-items-center" href="#" id="toggle-theme-btn"><i class="bi bi-moon-stars-fill me-2"></i><span>Toggle Theme</span></a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" id="open-settings-btn"><i class="bi bi-sliders me-2"></i>Webhook Settings</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <!-- History Sidebar -->
+        <div id="history-sidebar-container">
+            <div class="card h-100 d-flex flex-column">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Requests</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary border-0" id="new-request-btn" title="New Request"><i class="bi bi-plus-circle-fill"></i></button>
+                        <button class="btn btn-sm btn-outline-danger border-0" id="clear-history-btn" title="Clear All History"><i class="bi bi-trash3-fill"></i></button>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush" id="history-sidebar"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content">
+            <!-- Request UI -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <select class="form-select flex-grow-0" style="width: 120px;" id="request-type"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option></select>
+                        <input type="text" class="form-control" id="url-input" placeholder="Enter URL or Import cURL">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#curl-modal" title="Import from cURL"><i class="bi bi-upload"></i></button>
+                        <button class="btn btn-primary" type="button" id="send-button"><i class="bi bi-send-fill me-1"></i> Send</button>
+                    </div>
+                    <ul class="nav nav-tabs" id="request-tab" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#headers-content" type="button">Headers</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#body-content" type="button">Body</button></li>
+                    </ul>
+                    <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                        <div class="tab-pane fade show active" id="headers-content"><div id="headers-list"></div><button class="btn btn-sm btn-success mt-2" id="add-header-button"><i class="bi bi-plus-lg"></i> Add Header</button></div>
+                        <div class="tab-pane fade" id="body-content"><textarea id="body-input" class="form-control" rows="6" placeholder="Request body (e.g., JSON)"></textarea></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response UI -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center" id="response-card-header">
+                    <h5 class="mb-0">Response</h5>
+                    <div id="status-container" class="me-auto ms-3"></div>
+                    <div class="nav nav-pills">
+                        <button class="nav-link active py-1" id="view-json-btn">JSON</button>
+                        <button class="nav-link py-1" id="view-cards-btn">Cards</button>
+                        <button class="nav-link py-1" id="view-table-btn">Table</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="response-details-tab" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#response-body-content" type="button">Body</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#response-metrics-content" type="button">Metrics</button></li>
+                    </ul>
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="response-body-content" role="tabpanel">
+                            <pre id="json-response" class="p-3 rounded">Your API response will appear here...</pre>
+                            <div id="cards-response-container" class="d-none accordion"></div>
+                            <div id="table-response-container" class="d-none table-responsive"><table class="table table-striped table-bordered" id="table-response"></table></div>
+                        </div>
+                        <div class="tab-pane fade" id="response-metrics-content" role="tabpanel">
+                            <div id="metrics-container" class="p-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Offcanvas -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="settings-offcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title"><i class="bi bi-sliders me-2"></i>Webhook Settings</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="enable-webhook-switch">
+                <label class="form-check-label" for="enable-webhook-switch">Enable Webhook on Send</label>
+            </div>
+            <div id="webhook-options">
+                <label for="webhook-interval-input" class="form-label">Interval (seconds)</label>
+                <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" id="webhook-interval-input" value="10" min="2">
+                    <span class="input-group-text">sec</span>
+                </div>
+                <small class="form-text">The request will repeat at this interval for a maximum of 2 minutes.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- cURL Import Modal -->
+    <div class="modal fade" id="curl-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title"><i class="bi bi-terminal me-2"></i>Import from cURL</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body"><textarea id="curl-input" class="form-control" rows="8" placeholder="Paste your cURL command here..."></textarea></div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="modal-import-btn" data-bs-dismiss="modal"><i class="bi bi-arrow-down-left-square-fill me-1"></i> Import</button></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Element References ---
+        const urlInput = document.getElementById('url-input');
+        const requestTypeSelect = document.getElementById('request-type');
+        const sendButton = document.getElementById('send-button');
+        const headersList = document.getElementById('headers-list');
+        const addHeaderButton = document.getElementById('add-header-button');
+        const bodyInput = document.getElementById('body-input');
+        const jsonResponseView = document.getElementById('json-response');
+        const cardsResponseContainer = document.getElementById('cards-response-container');
+        const tableResponseContainer = document.getElementById('table-response-container');
+        const statusContainer = document.getElementById('status-container');
+        const viewJsonBtn = document.getElementById('view-json-btn');
+        const viewCardsBtn = document.getElementById('view-cards-btn');
+        const viewTableBtn = document.getElementById('view-table-btn');
+        const curlInput = document.getElementById('curl-input');
+        const modalImportBtn = document.getElementById('modal-import-btn');
+        const historySidebar = document.getElementById('history-sidebar');
+        const sidebarContainer = document.getElementById('history-sidebar-container');
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const newRequestBtn = document.getElementById('new-request-btn');
+        const metricsContainer = document.getElementById('metrics-container');
+        const webhookStatusPill = document.getElementById('webhook-status-pill');
+        const stopWebhookBtn = document.getElementById('stop-webhook-btn');
+        const webhookTimer = document.getElementById('webhook-timer');
+        const enableWebhookSwitch = document.getElementById('enable-webhook-switch');
+        const webhookIntervalInput = document.getElementById('webhook-interval-input');
+        const toggleThemeBtn = document.getElementById('toggle-theme-btn');
+        const openSettingsBtn = document.getElementById('open-settings-btn');
+        
+        const settingsOffcanvasEl = document.getElementById('settings-offcanvas');
+        const settingsOffcanvas = new bootstrap.Offcanvas(settingsOffcanvasEl);
+
+        let responseData = null;
+        let currentRequestId = null;
+        let webhookIntervalId = null;
+        let webhookTimeoutId = null;
+        let webhookCountdownId = null;
+        let isWebhookEnabled = false;
+
+        // --- Theme Toggle ---
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('apiClientTheme', theme);
+            const icon = toggleThemeBtn.querySelector('i');
+            if (theme === 'dark') {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-stars-fill');
+            } else {
+                icon.classList.remove('bi-moon-stars-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+        };
+        toggleThemeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+        const savedTheme = localStorage.getItem('apiClientTheme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
+
+        // --- UI & Visualization Functions ---
+        const createHeaderInput = (key = '', value = '') => {
+            const row = document.createElement('div');
+            row.className = 'input-group input-group-sm mb-2 header-item';
+            row.style.animation = 'popIn 0.3s ease-out';
+            row.innerHTML = `<input type="text" class="form-control header-key" placeholder="Key" value="${key}"><input type="text" class="form-control header-value" placeholder="Value" value="${value}"><button class="btn btn-outline-danger border-0 remove-header-btn" type="button"><i class="bi bi-trash"></i></button>`;
+            headersList.appendChild(row);
+            row.querySelector('.remove-header-btn').addEventListener('click', () => row.remove());
+        };
+
+        const displayStatus = (status, ok) => {
+            const statusClass = ok ? 'text-success' : 'text-danger';
+            statusContainer.innerHTML = `<span class="badge rounded-pill bg-${ok ? 'success' : 'danger'}">Status: ${status}</span>`;
+        };
+
+        const switchView = (view) => {
+            [jsonResponseView, cardsResponseContainer, tableResponseContainer].forEach(v => v.classList.add('d-none'));
+            [viewJsonBtn, viewCardsBtn, viewTableBtn].forEach(b => b.classList.remove('active'));
+            
+            if (view === 'json') { jsonResponseView.classList.remove('d-none'); viewJsonBtn.classList.add('active'); } 
+            else if (view === 'cards') { cardsResponseContainer.classList.remove('d-none'); viewCardsBtn.classList.add('active'); if (responseData) renderCards(responseData); }
+            else if (view === 'table') { tableResponseContainer.classList.remove('d-none'); viewTableBtn.classList.add('active'); if (responseData) renderTable(responseData); }
+        };
+
+        const renderTable = (data) => {
+            const tableEl = document.getElementById('table-response');
+            tableEl.innerHTML = '';
+            if (!Array.isArray(data) || data.length === 0) { tableEl.innerHTML = '<thead><tr><th>Info</th></tr></thead><tbody><tr><td>Data is not an array or is empty.</td></tr></tbody>'; return; }
+            const headers = Object.keys(data[0]);
+            const thead = document.createElement('thead');
+            thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+            const tbody = document.createElement('tbody');
+            tbody.innerHTML = data.map(obj => `<tr>${headers.map(h => `<td>${typeof obj[h] === 'object' ? JSON.stringify(obj[h]) : obj[h]}</td>`).join('')}</tr>`).join('');
+            tableEl.append(thead, tbody);
+        };
+        
+        const renderCards = (data) => {
+            cardsResponseContainer.innerHTML = '';
+            const dataArray = Array.isArray(data) ? data : [data];
+            if (dataArray.length === 0 || (dataArray[0] && Object.keys(dataArray[0]).length === 0)) {
+                cardsResponseContainer.innerHTML = '<p class="text-secondary">No data to display in card view.</p>';
+                return;
+            }
+            dataArray.forEach((item, index) => {
+                const itemId = `card-item-${index}`;
+                const title = item.name || item.title || item.id || `Item ${index + 1}`;
+                const cardHtml = `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${itemId}">
+                                ${title}
+                            </button>
+                        </h2>
+                        <div id="${itemId}" class="accordion-collapse collapse" data-bs-parent="#cards-response-container">
+                            <div class="accordion-body">
+                                <pre><code>${JSON.stringify(item, null, 2)}</code></pre>
+                            </div>
+                        </div>
+                    </div>`;
+                cardsResponseContainer.innerHTML += cardHtml;
+            });
+        };
+
+        const renderMetrics = (duration, size) => {
+            metricsContainer.innerHTML = `
+                <p><strong>Request Duration:</strong> ${duration} ms</p>
+                <p><strong>Response Size:</strong> ${size.toFixed(2)} KB</p>
+            `;
+        };
+
+        // --- Webhook Logic ---
+        const startWebhook = () => {
+            const intervalSeconds = parseInt(webhookIntervalInput.value, 10);
+            if (!intervalSeconds || intervalSeconds < 2) {
+                alert('Interval must be at least 2 seconds.');
+                return;
+            }
+            
+            stopWebhook(); 
+            sendButton.disabled = true;
+            webhookStatusPill.classList.remove('d-none');
+            webhookStatusPill.querySelector('i').classList.add('spinning');
+            
+            const durationMs = 120 * 1000;
+            let remainingMs = durationMs;
+
+            const updateTimer = () => {
+                webhookTimer.textContent = `Stopping in ${Math.ceil(remainingMs / 1000)}s`;
+                remainingMs -= 1000;
+            };
+
+            sendRequest(true); 
+            webhookIntervalId = setInterval(() => sendRequest(true), intervalSeconds * 1000);
+            
+            updateTimer();
+            webhookCountdownId = setInterval(updateTimer, 1000);
+
+            webhookTimeoutId = setTimeout(stopWebhook, durationMs);
+        };
+
+        const stopWebhook = () => {
+            clearInterval(webhookIntervalId);
+            clearTimeout(webhookTimeoutId);
+            clearInterval(webhookCountdownId);
+            webhookIntervalId = null;
+            webhookTimeoutId = null;
+            webhookCountdownId = null;
+            webhookStatusPill.classList.add('d-none');
+            webhookStatusPill.querySelector('i').classList.remove('spinning');
+            sendButton.disabled = false;
+            sendButton.innerHTML = `<i class="bi bi-send-fill me-1"></i> Send`;
+        };
+
+        // --- Sidebar & History Logic ---
+        sidebarToggleBtn.addEventListener('click', () => sidebarContainer.classList.toggle('collapsed'));
+        
+        const getHistory = () => JSON.parse(localStorage.getItem('apiClientHistory') || '[]');
+        const saveHistory = (history) => localStorage.setItem('apiClientHistory', JSON.stringify(history));
+
+        const clearHistory = () => {
+            if (confirm('Are you sure you want to clear all request history?')) {
+                localStorage.removeItem('apiClientHistory');
+                renderHistory();
+            }
+        };
+
+        const addOrUpdateHistory = (request) => {
+            let history = getHistory();
+            if (request.id && history.some(h => h.id === request.id)) {
+                history = history.map(h => h.id === request.id ? request : h);
+            } else {
+                request.id = crypto.randomUUID();
+                history.unshift(request);
+            }
+            saveHistory(history);
+            renderHistory();
+            return request.id;
+        };
+
+        const deleteRequestFromHistory = (requestId) => {
+            let history = getHistory();
+            history = history.filter(req => req.id !== requestId);
+            saveHistory(history);
+            renderHistory();
+        };
+
+        const renderHistory = () => {
+            const history = getHistory();
+            historySidebar.innerHTML = '';
+            if (history.length === 0) {
+                historySidebar.innerHTML = '<div class="p-3 text-secondary text-center">No history yet.</div>';
+                return;
+            }
+            history.forEach(req => {
+                const item = document.createElement('div');
+                item.className = 'history-item list-group-item p-2 d-flex align-items-center';
+                item.dataset.requestId = req.id;
+                item.innerHTML = `
+                    <span class="method method-${req.method}">${req.method}</span>
+                    <span class="url ms-2 small flex-grow-1">${req.url}</span>
+                    <button class="btn btn-sm btn-outline-danger border-0 delete-history-btn"><i class="bi bi-trash"></i></button>
+                `;
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-history-btn')) return;
+                    loadRequestFromHistory(req.id);
+                });
+                item.querySelector('.delete-history-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteRequestFromHistory(req.id);
+                });
+                historySidebar.appendChild(item);
+            });
+        };
+
+        const loadRequestFromHistory = (requestId) => {
+            const history = getHistory();
+            const request = history.find(req => req.id === requestId);
+            if (!request) return;
+
+            currentRequestId = request.id;
+            urlInput.value = request.url;
+            requestTypeSelect.value = request.method;
+            bodyInput.value = request.body;
+            headersList.innerHTML = '';
+            request.headers.forEach(h => createHeaderInput(h.key, h.value));
+            
+            document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
+            const activeItem = document.querySelector(`.history-item[data-request-id="${requestId}"]`);
+            if (activeItem) activeItem.classList.add('active');
+        };
+        
+        const parseCurlCommand = (curlString) => {
+            const result = { url: '', method: 'GET', headers: [], body: '' };
+            const cleanCurl = curlString.replace(/\\\n/g, ' ').replace(/\n/g, ' ').trim();
+            const args = [];
+            let currentArg = '', inQuote = null;
+            for (let i = 0; i < cleanCurl.length; i++) {
+                const char = cleanCurl[i];
+                if (inQuote) {
+                    if (char === inQuote && cleanCurl[i - 1] !== '\\') inQuote = null;
+                    else currentArg += char;
+                } else {
+                    if (char === "'" || char === '"') inQuote = char;
+                    else if (char === ' ') { if (currentArg) { args.push(currentArg); currentArg = ''; } } 
+                    else currentArg += char;
+                }
+            }
+            if (currentArg) args.push(currentArg);
+            for (let i = 0; i < args.length; i++) {
+                const arg = args[i];
+                if (arg.startsWith('http')) { if (!result.url) result.url = arg; } 
+                else if (arg === '-X' || arg === '--request') { result.method = args[++i].toUpperCase(); } 
+                else if (arg === '-H' || arg === '--header') {
+                    const header = args[++i];
+                    const [key, ...valueParts] = header.split(/:(.*)/s);
+                    if (key && valueParts.length > 0) result.headers.push({ key: key.trim(), value: valueParts[0].trim() });
+                } else if (arg === '-d' || arg === '--data' || arg === '--data-raw') {
+                    result.body = args[++i];
+                    if (result.method === 'GET') result.method = 'POST';
+                }
+            }
+            return result;
+        };
+        
+        const populateFromCurl = (parsed) => {
+            urlInput.value = parsed.url;
+            requestTypeSelect.value = parsed.method;
+            try { bodyInput.value = parsed.body ? JSON.stringify(JSON.parse(parsed.body), null, 2) : ''; } 
+            catch { bodyInput.value = parsed.body; }
+            headersList.innerHTML = '';
+            parsed.headers.forEach(h => createHeaderInput(h.key, h.value));
+            if (parsed.body) new bootstrap.Tab(document.querySelector('[data-bs-target="#body-content"]')).show();
+        };
+
+        const sendRequest = async (isAutomatedCall = false) => {
+            const url = urlInput.value; if (!url) { alert('Please enter a URL.'); return; }
+            const startTime = performance.now();
+            if (!webhookIntervalId) {
+                sendButton.disabled = true;
+                sendButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Sending...`;
+            }
+            
+            const headers = new Headers();
+            const headerArrayForHistory = [];
+            document.querySelectorAll('.header-item').forEach(item => {
+                const key = item.querySelector('.header-key').value;
+                const value = item.querySelector('.header-value').value;
+                if (key) {
+                    headers.append(key, value);
+                    headerArrayForHistory.push({ key, value });
+                }
+            });
+
+            const currentRequest = {
+                id: currentRequestId,
+                method: requestTypeSelect.value,
+                url: url,
+                headers: headerArrayForHistory,
+                body: bodyInput.value
+            };
+            
+            if (!isAutomatedCall) {
+                const savedId = addOrUpdateHistory(currentRequest);
+                loadRequestFromHistory(savedId);
+            }
+
+            if (['POST', 'PUT', 'PATCH'].includes(requestTypeSelect.value) && !headers.has('Content-Type')) { headers.append('Content-Type', 'application/json'); }
+            
+            try {
+                const response = await fetch(url, { method: requestTypeSelect.value, headers, body: ['POST', 'PUT', 'PATCH'].includes(requestTypeSelect.value) && bodyInput.value ? bodyInput.value : undefined });
+                const responseText = await response.text();
+                const endTime = performance.now();
+                
+                const duration = Math.round(endTime - startTime);
+                const size = new Blob([responseText]).size / 1024;
+                renderMetrics(duration, size);
+
+                const data = responseText ? JSON.parse(responseText) : { message: "OK: Empty response body from server." };
+                displayStatus(response.status, response.ok);
+                responseData = data;
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            } catch (error) {
+                displayStatus(error.message || 'Request Failed', false);
+                responseData = { error: true, message: error.message };
+            } finally {
+                const currentViewEl = document.querySelector('.nav-pills .nav-link.active');
+                const currentView = currentViewEl ? currentViewEl.id.replace('view-', '').replace('-btn', '') : 'json';
+                switchView(currentView);
+                jsonResponseView.textContent = JSON.stringify(responseData, null, 2);
+                if (!webhookIntervalId) {
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = `<i class="bi bi-send-fill me-1"></i> Send`;
+                }
+            }
+        };
+        
+        const resetCurrentRequest = () => {
+            currentRequestId = null;
+            document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
+        };
+
+        const handleSendClick = () => {
+            if (isWebhookEnabled) {
+                startWebhook();
+            } else {
+                sendRequest();
+            }
+        };
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', handleSendClick);
+        addHeaderButton.addEventListener('click', createHeaderInput);
+        modalImportBtn.addEventListener('click', () => {
+            resetCurrentRequest();
+            populateFromCurl(parseCurlCommand(curlInput.value));
+        });
+        viewJsonBtn.addEventListener('click', () => switchView('json'));
+        viewCardsBtn.addEventListener('click', () => switchView('cards'));
+        viewTableBtn.addEventListener('click', () => switchView('table'));
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        stopWebhookBtn.addEventListener('click', stopWebhook);
+        
+        enableWebhookSwitch.addEventListener('change', (e) => {
+            isWebhookEnabled = e.target.checked;
+        });
+        
+        openSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsOffcanvas.show();
+        });
+
+        newRequestBtn.addEventListener('click', () => {
+            resetCurrentRequest();
+            urlInput.value = '';
+            requestTypeSelect.value = 'GET';
+            headersList.innerHTML = '';
+            createHeaderInput();
+            bodyInput.value = '';
+            jsonResponseView.textContent = 'Your API response will appear here...';
+            statusContainer.innerHTML = '';
+        });
+        
+        [urlInput, requestTypeSelect, bodyInput].forEach(el => el.addEventListener('input', resetCurrentRequest));
+        headersList.addEventListener('input', resetCurrentRequest);
+
+        // --- Initial Load ---
+        if (headersList.childElementCount === 0) createHeaderInput();
+        renderHistory();
+    });
+    </script>
+</body>
+</html>
