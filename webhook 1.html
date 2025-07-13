@@ -15,6 +15,14 @@
     
     <!-- GSAP for Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
     <!-- Custom Styles & Tailwind Config -->
     <style>
@@ -66,6 +74,39 @@
           0%, 100% { box-shadow: 0 0 2px 0px rgba(59, 130, 246, 0.4); }
           50% { box-shadow: 0 0 10px 3px rgba(59, 130, 246, 0.7); }
         }
+        
+        /* Syntax Highlighting Theme Adjustments */
+        .hljs {
+            background: #f1f5f9; /* slate-100 */
+            color: #475569; /* slate-600 */
+            border-radius: 0.5rem;
+        }
+        .dark .hljs {
+            background: #1e293b; /* slate-800 */
+            color: #abb2bf;
+        }
+        .dark .hljs-comment, .dark .hljs-quote { color: #5c6370; font-style: italic; }
+        .dark .hljs-doctag, .dark .hljs-keyword, .dark .hljs-formula { color: #c678dd; }
+        .dark .hljs-section, .dark .hljs-name, .dark .hljs-selector-tag, .dark .hljs-deletion, .dark .hljs-subst { color: #e06c75; }
+        .dark .hljs-literal { color: #56b6c2; }
+        .dark .hljs-string, .dark .hljs-regexp, .dark .hljs-addition, .dark .hljs-attribute, .dark .hljs-meta-string { color: #98c379; }
+        .dark .hljs-built_in, .dark .hljs-class .hljs-title { color: #e6c07b; }
+        .dark .hljs-attr, .dark .hljs-variable, .dark .hljs-template-variable, .dark .hljs-type, .dark .hljs-selector-class, .dark .hljs-selector-attr, .dark .hljs-selector-pseudo, .dark .hljs-number { color: #d19a66; }
+        .dark .hljs-symbol, .dark .hljs-bullet, .dark .hljs-link, .dark .hljs-meta, .dark .hljs-selector-id, .dark .hljs-title { color: #61afef; }
+        .dark .hljs-emphasis { font-style: italic; }
+        .dark .hljs-strong { font-weight: bold; }
+        
+        /* Light theme overrides */
+        html:not(.dark) .hljs-comment, html:not(.dark) .hljs-quote { color: #a0aec0; }
+        html:not(.dark) .hljs-keyword, html:not(.dark) .hljs-selector-tag, html:not(.dark) .hljs-subst { color: #b545b5; }
+        html:not(.dark) .hljs-number, html:not(.dark) .hljs-literal, html:not(.dark) .hljs-variable, html:not(.dark) .hljs-template-variable, html:not(.dark) .hljs-tag .hljs-attr { color: #b545b5; }
+        html:not(.dark) .hljs-string, html:not(.dark) .hljs-doctag { color: #38a169; }
+        html:not(.dark) .hljs-title, html:not(.dark) .hljs-section, html:not(.dark) .hljs-selector-id { color: #2b6cb0; }
+        html:not(.dark) .hljs-class .hljs-title, html:not(.dark) .hljs-type { color: #d69d2e; }
+        html:not(.dark) .hljs-attribute { color: #dd6b20; }
+        html:not(.dark) .hljs-name { color: #c53030; }
+        html:not(.dark) .hljs-regexp, html:not(.dark) .hljs-link { color: #00b5d8; }
+
     </style>
     <script>
         // Custom Tailwind CSS Configuration
@@ -107,18 +148,16 @@
         <!-- History Sidebar -->
         <aside id="history-sidebar-container" class="bg-light-surface dark:bg-dark-surface/80 backdrop-blur-sm border-r border-light-border dark:border-dark-border flex-shrink-0 flex flex-col transition-width duration-300 ease-in-out w-80">
             <div class="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border h-16 flex-shrink-0">
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary-500">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock-rotate-left text-primary-500 text-xl"></i>
                     <h2 class="font-bold text-lg">History</h2>
                 </div>
                 <div>
                     <button id="new-request-btn" title="New Request" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        <i class="fa-solid fa-plus"></i>
                     </button>
                     <button id="clear-history-btn" title="Clear All History" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
@@ -133,24 +172,24 @@
             <header class="flex items-center justify-between p-4 border-b bg-light-surface/80 dark:bg-dark-surface/80 backdrop-blur-sm border-light-border dark:border-dark-border h-16 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <button id="sidebar-toggle-btn" title="Toggle Sidebar" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <h1 class="text-xl font-bold text-slate-900 dark:text-white">API Client</h1>
                 </div>
 
                 <div id="webhook-status-pill" class="hidden items-center gap-2 bg-primary-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 11.667 0l3.181-3.183m-4.991-2.691v4.992" /></svg>
+                    <i class="fa-solid fa-arrows-rotate"></i>
                     <span id="webhook-timer"></span>
                     <button id="stop-webhook-btn" class="ml-1 opacity-70 hover:opacity-100">&times;</button>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button id="toggle-theme-btn" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.95-4.243-1.59-1.591M5.25 12H3m4.243-4.95L6.343 5.657M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Z" /></svg>
-                        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+                    <button id="toggle-theme-btn" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xl">
+                        <i id="theme-icon-light" class="fa-solid fa-sun"></i>
+                        <i id="theme-icon-dark" class="fa-solid fa-moon hidden"></i>
                     </button>
-                    <button id="open-settings-btn" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.43.992a6.759 6.759 0 0 1 0 1.905c.008.379.137.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.6 6.6 0 0 1-.22.128c-.333.183-.582.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.759 6.759 0 0 1 0-1.905c-.008-.379-.137-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                    <button id="open-settings-btn" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xl">
+                        <i class="fa-solid fa-gear"></i>
                     </button>
                 </div>
             </header>
@@ -164,11 +203,11 @@
                             <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
                         </select>
                         <input type="text" id="url-input" class="flex-grow bg-slate-100 dark:bg-slate-700 border-light-border dark:border-slate-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition code-font" placeholder="Enter URL or Import cURL">
-                        <button data-modal-target="curl-modal" data-modal-toggle="curl-modal" class="px-4 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2" title="Import from cURL">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
+                        <button id="curl-modal-btn" class="px-4 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2" title="Import from cURL">
+                             <i class="fa-solid fa-upload"></i>
                         </button>
                         <button id="send-button" class="bg-primary-600 text-white font-semibold px-5 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-dark-bg transition-all duration-200 ease-in-out flex items-center justify-center gap-2 transform hover:scale-105">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
+                            <i class="fa-solid fa-paper-plane"></i>
                             Send
                         </button>
                     </div>
@@ -184,12 +223,18 @@
                             <div id="headers-content" class="tab-pane active space-y-2">
                                 <div id="headers-list" class="space-y-2"></div>
                                 <button id="add-header-button" class="text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+                                    <i class="fa-solid fa-plus"></i>
                                     Add Header
                                 </button>
                             </div>
                             <div id="body-content" class="tab-pane hidden">
-                                <textarea id="body-input" class="w-full h-40 bg-slate-100 dark:bg-slate-900/50 border-light-border dark:border-dark-border rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition code-font" placeholder="Request body (e.g., JSON)"></textarea>
+                                <textarea id="body-input" class="w-full h-40 bg-slate-100 dark:bg-slate-900/50 border-light-border dark:border-dark-border rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition code-font whitespace-pre-wrap" placeholder="Request body (e.g., JSON)"></textarea>
+                                <div class="mt-2">
+                                    <label class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                                        <input type="checkbox" id="body-wrap-toggle" class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" checked>
+                                        <span class="ml-2">Word Wrap</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -202,10 +247,15 @@
                             <h3 class="text-lg font-bold">Response</h3>
                             <div id="status-container"></div>
                         </div>
-                        <div id="response-view-switcher" class="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-lg text-sm">
-                            <button id="view-json-btn" class="response-view-btn active px-3 py-1 font-semibold rounded-md">JSON</button>
-                            <button id="view-cards-btn" class="response-view-btn px-3 py-1 font-semibold rounded-md">Cards</button>
-                            <button id="view-table-btn" class="response-view-btn px-3 py-1 font-semibold rounded-md">Table</button>
+                        <div class="flex items-center gap-2">
+                            <div id="response-view-switcher" class="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-lg text-sm">
+                                <button id="view-json-btn" class="response-view-btn active px-3 py-1 font-semibold rounded-md">JSON</button>
+                                <button id="view-cards-btn" class="response-view-btn px-3 py-1 font-semibold rounded-md">Cards</button>
+                                <button id="view-table-btn" class="response-view-btn px-3 py-1 font-semibold rounded-md">Table</button>
+                            </div>
+                             <button id="extract-json-btn" class="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Extract from JSON" disabled>
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="flex-grow min-h-0">
@@ -217,7 +267,7 @@
                         </div>
                         <div class="p-4 overflow-y-auto">
                             <div id="response-body-content" class="tab-pane active">
-                                <pre id="json-response" class="code-font bg-slate-100 dark:bg-slate-900/50 p-4 rounded-lg text-sm overflow-auto max-h-[100vh]">Your API response will appear here...</pre>
+                                <pre class="overflow-auto max-h-[40vh]"><code id="json-response" class="language-json p-4 rounded-lg text-sm">Your API response will appear here...</code></pre>
                                 <div id="cards-response-container" class="hidden space-y-2 overflow-y-auto max-h-[40vh]"></div>
                                 <div id="table-response-container" class="hidden overflow-auto max-h-[40vh]">
                                     <table class="w-full text-sm text-left" id="table-response"></table>
@@ -237,8 +287,8 @@
     <div id="settings-offcanvas" class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-light-surface dark:bg-dark-surface w-80 shadow-xl" tabindex="-1">
         <div class="flex items-center justify-between">
             <h5 class="text-base font-semibold uppercase">Webhook Settings</h5>
-            <button type="button" data-drawer-hide="settings-offcanvas" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">
-                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
+            <button type="button" id="settings-close-btn" class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="py-4 space-y-4">
@@ -264,16 +314,61 @@
             <div class="relative bg-light-surface dark:bg-dark-surface rounded-lg shadow-xl w-full">
                 <div class="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold">Import from cURL</h3>
-                    <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="curl-modal">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
+                    <button type="button" id="curl-close-btn" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
                 <div class="p-4 md:p-5 space-y-4">
                     <textarea id="curl-input" class="w-full h-48 bg-slate-100 dark:bg-slate-900/50 border-light-border dark:border-dark-border rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition code-font" placeholder="Paste your cURL command here..."></textarea>
                 </div>
                 <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <button id="modal-import-btn" data-modal-hide="curl-modal" type="button" class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Import</button>
-                    <button data-modal-hide="curl-modal" type="button" class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
+                    <button id="modal-import-btn" type="button" class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Import</button>
+                    <button id="curl-cancel-btn" type="button" class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JSON Extract Modal -->
+    <div id="extract-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-full">
+        <div class="relative p-4 w-full max-w-4xl h-full flex items-center">
+            <div class="relative bg-light-surface dark:bg-dark-surface rounded-lg shadow-xl w-full flex flex-col max-h-[90vh]">
+                <div class="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-xl font-semibold">Extract from JSON Response</h3>
+                    <button type="button" id="extract-close-btn" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow min-h-0">
+                    <div class="flex flex-col">
+                        <label for="extract-paths-input" class="mb-2 font-semibold">Paths to Extract (one per line)</label>
+                        <textarea id="extract-paths-input" class="w-full h-full bg-slate-100 dark:bg-slate-900/50 border-light-border dark:border-dark-border rounded-md p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition code-font" placeholder="user.name&#10;data.testcases[*].id"></textarea>
+                    </div>
+                    <div class="flex flex-col min-h-0">
+                        <label for="extract-results-output" class="mb-2 font-semibold">Results</label>
+                        <pre class="w-full h-full flex-grow min-h-0"><code id="extract-results-output" class="language-json p-4 rounded-lg text-sm overflow-auto h-full"></code></pre>
+                    </div>
+                </div>
+                 <div class="px-4 pb-4 border-t border-light-border dark:border-dark-border pt-4 flex flex-wrap items-center justify-between gap-4">
+                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        <label class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                            <input type="checkbox" id="extract-search-all-toggle" class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50" disabled>
+                            <span class="ml-2">Search all objects in root array</span>
+                        </label>
+                         <div>
+                            <span class="text-sm mr-2">Format:</span>
+                            <input type="radio" id="format-json" name="extract-format" value="json" class="mr-1" checked><label for="format-json" class="mr-3 text-sm">JSON</label>
+                            <input type="radio" id="format-list" name="extract-format" value="list" class="mr-1"><label for="format-list" class="text-sm">List</label>
+                         </div>
+                     </div>
+                     <div class="flex items-center gap-2">
+                        <button id="copy-extract-results-btn" class="px-3 py-1.5 text-sm rounded-md bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                        <button id="clear-extract-paths-btn" class="px-3 py-1.5 text-sm rounded-md bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 dark:hover:bg-slate-500 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-eraser"></i> Clear
+                        </button>
+                     </div>
                 </div>
             </div>
         </div>
@@ -289,6 +384,7 @@
         const headersList = document.getElementById('headers-list');
         const addHeaderButton = document.getElementById('add-header-button');
         const bodyInput = document.getElementById('body-input');
+        const bodyWrapToggle = document.getElementById('body-wrap-toggle');
         const jsonResponseView = document.getElementById('json-response');
         const cardsResponseContainer = document.getElementById('cards-response-container');
         const tableResponseContainer = document.getElementById('table-response-container');
@@ -311,11 +407,25 @@
         const webhookIntervalInput = document.getElementById('webhook-interval-input');
         const toggleThemeBtn = document.getElementById('toggle-theme-btn');
         const openSettingsBtn = document.getElementById('open-settings-btn');
+        const extractJsonBtn = document.getElementById('extract-json-btn');
+        const extractPathsInput = document.getElementById('extract-paths-input');
+        const extractResultsOutput = document.getElementById('extract-results-output');
+        const extractSearchAllToggle = document.getElementById('extract-search-all-toggle');
+        const copyExtractResultsBtn = document.getElementById('copy-extract-results-btn');
+        const clearExtractPathsBtn = document.getElementById('clear-extract-paths-btn');
         
         // Modal & Drawer Elements
+        const curlModalBtn = document.getElementById('curl-modal-btn');
         const curlModal = document.getElementById('curl-modal');
+        const curlCloseBtn = document.getElementById('curl-close-btn');
+        const curlCancelBtn = document.getElementById('curl-cancel-btn');
+        
+        const extractModal = document.getElementById('extract-modal');
+        const extractCloseBtn = document.getElementById('extract-close-btn');
+
         const settingsOffcanvas = document.getElementById('settings-offcanvas');
         const settingsOffcanvasBackdrop = document.getElementById('settings-offcanvas-backdrop');
+        const settingsCloseBtn = document.getElementById('settings-close-btn');
 
         let responseData = null;
         let currentRequestId = null;
@@ -368,7 +478,7 @@
                 <input type="text" class="header-key flex-grow bg-slate-100 dark:bg-slate-700 border-light-border dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition" placeholder="Key" value="${key}">
                 <input type="text" class="header-value flex-grow bg-slate-100 dark:bg-slate-700 border-light-border dark:border-slate-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition" placeholder="Value" value="${value}">
                 <button class="remove-header-btn p-2 rounded-md text-slate-400 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/50 dark:hover:text-red-400 transition-colors" type="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.58.22-2.365.468a.75.75 0 1 0 .53 1.402c.794-.248 1.57-.394 2.335-.464v1.162a1 1 0 0 0 .75.97l.01.005a1 1 0 0 0 .74-.97V5.66c.765.07 1.54.216 2.335.464a.75.75 0 1 0 .53-1.402c-.785-.248-1.57-.391-2.365-.468v-.443A2.75 2.75 0 0 0 8.75 1ZM3.5 8.75c0-.69.56-1.25 1.25-1.25h6.5c.69 0 1.25.56 1.25 1.25v6.5c0 .69-.56 1.25-1.25 1.25h-6.5c-.69 0-1.25-.56-1.25-1.25v-6.5Zm3.5 1a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0v-4.5Zm4-1.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /></svg>
+                    <i class="fa-solid fa-xmark"></i>
                 </button>`;
             headersList.appendChild(row);
             gsap.from(row, { duration: 0.3, opacity: 0, y: -10, ease: "power2.out" });
@@ -383,13 +493,13 @@
         };
 
         const switchView = (view) => {
-            [jsonResponseView, cardsResponseContainer, tableResponseContainer].forEach(v => v.classList.add('hidden'));
+            [jsonResponseView.parentElement, cardsResponseContainer, tableResponseContainer].forEach(v => v.classList.add('hidden'));
             document.querySelectorAll('.response-view-btn').forEach(b => b.classList.remove('active', 'bg-white', 'dark:bg-slate-800', 'text-slate-900', 'dark:text-white'));
             
             const btn = document.getElementById(`view-${view}-btn`);
             btn.classList.add('active', 'bg-white', 'dark:bg-slate-800', 'text-slate-900', 'dark:text-white');
 
-            if (view === 'json') { jsonResponseView.classList.remove('hidden'); } 
+            if (view === 'json') { jsonResponseView.parentElement.classList.remove('hidden'); } 
             else if (view === 'cards') { cardsResponseContainer.classList.remove('hidden'); if (responseData) renderCards(responseData); }
             else if (view === 'table') { tableResponseContainer.classList.remove('hidden'); if (responseData) renderTable(responseData); }
         };
@@ -426,7 +536,7 @@
                     <h2>
                         <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left" data-accordion-target="#${itemId}">
                             <span>${title}</span>
-                            <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"/></svg>
+                            <i class="fa-solid fa-chevron-down shrink-0 transition-transform"></i>
                         </button>
                     </h2>
                     <div id="${itemId}" class="hidden p-4 border-t border-light-border dark:border-dark-border">
@@ -435,7 +545,7 @@
                 cardsResponseContainer.appendChild(card);
                 const button = card.querySelector('button');
                 const content = card.querySelector(`#${itemId}`);
-                const icon = card.querySelector('[data-accordion-icon]');
+                const icon = card.querySelector('i');
                 button.addEventListener('click', () => {
                     content.classList.toggle('hidden');
                     icon.classList.toggle('rotate-180');
@@ -452,7 +562,7 @@
                 return `
                     <div class="grid grid-cols-3 gap-4">
                         <dt class="font-medium text-light-muted dark:text-dark-muted">${label}</dt>
-                        <dd class="col-span-2 font-mono text-slate-700 dark:text-slate-300">${value}</dd>
+                        <dd class="col-span-2 font-mono text-slate-700 dark:text-slate-300 break-all">${value}</dd>
                     </div>`;
             };
             
@@ -527,22 +637,23 @@
         });
 
         // --- Modal & Drawer Toggling ---
-        const toggleModal = (modalId, show) => {
-            const modal = document.getElementById(modalId);
+        const toggleModal = (modalEl, show) => {
+            if (!modalEl) return;
             if (show) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
+                modalEl.classList.remove('hidden');
+                modalEl.classList.add('flex');
             } else {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
+                modalEl.classList.add('hidden');
+                modalEl.classList.remove('flex');
             }
         };
-        document.querySelectorAll('[data-modal-toggle]').forEach(el => {
-            el.addEventListener('click', () => toggleModal(el.dataset.modalTarget, true));
-        });
-        document.querySelectorAll('[data-modal-hide]').forEach(el => {
-            el.addEventListener('click', () => toggleModal(el.closest('.fixed').id, false));
-        });
+
+        curlModalBtn.addEventListener('click', () => toggleModal(curlModal, true));
+        curlCloseBtn.addEventListener('click', () => toggleModal(curlModal, false));
+        curlCancelBtn.addEventListener('click', () => toggleModal(curlModal, false));
+        
+        extractJsonBtn.addEventListener('click', () => toggleModal(extractModal, true));
+        extractCloseBtn.addEventListener('click', () => toggleModal(extractModal, false));
 
         const toggleDrawer = (show) => {
             if(show) {
@@ -557,7 +668,7 @@
             e.preventDefault();
             toggleDrawer(true);
         });
-        document.querySelector('[data-drawer-hide="settings-offcanvas"]').addEventListener('click', () => toggleDrawer(false));
+        settingsCloseBtn.addEventListener('click', () => toggleDrawer(false));
         settingsOffcanvasBackdrop.addEventListener('click', () => toggleDrawer(false));
 
 
@@ -573,7 +684,7 @@
             sendButton.disabled = true;
             webhookStatusPill.classList.remove('hidden');
             webhookStatusPill.classList.add('flex', 'breathing');
-            webhookStatusPill.querySelector('svg').classList.add('spinning');
+            webhookStatusPill.querySelector('i').classList.add('spinning');
             
             const durationMs = 120 * 1000;
             let remainingMs = durationMs;
@@ -601,11 +712,11 @@
             webhookCountdownId = null;
             webhookStatusPill.classList.add('hidden');
             webhookStatusPill.classList.remove('flex', 'breathing');
-            const icon = webhookStatusPill.querySelector('svg');
+            const icon = webhookStatusPill.querySelector('i');
             if(icon) icon.classList.remove('spinning');
 
             sendButton.disabled = false;
-            sendButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg> Send`;
+            sendButton.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
         };
 
         // --- Sidebar & History Logic (Functionality preserved) ---
@@ -664,7 +775,7 @@
                     <span class="font-bold text-xs w-14 text-center ${methodColors[req.method] || 'text-slate-500'}">${req.method}</span>
                     <span class="url text-sm flex-grow truncate">${req.url}</span>
                     <button class="delete-history-btn p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 flex-shrink-0">
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.5-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.5 6.75a.75.75 0 0 0-1.5 0v5.5a.75.75 0 0 0 1.5 0v-5.5Zm3 0a.75.75 0 0 0-1.5 0v5.5a.75.75 0 0 0 1.5 0v-5.5Z" clip-rule="evenodd" /></svg>
+                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 `;
                 item.addEventListener('click', (e) => {
@@ -746,7 +857,7 @@
             const startTime = performance.now();
             if (!webhookIntervalId) {
                 sendButton.disabled = true;
-                sendButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending...`;
+                sendButton.innerHTML = `<i class="fa-solid fa-spinner animate-spin -ml-1 mr-3"></i> Sending...`;
             }
             
             const headers = new Headers();
@@ -800,11 +911,25 @@
             } finally {
                 const currentViewEl = document.querySelector('.response-view-btn.active');
                 const currentView = currentViewEl ? currentViewEl.id.replace('view-', '').replace('-btn', '') : 'json';
-                switchView(currentView);
+                
                 jsonResponseView.textContent = JSON.stringify(responseData, null, 2);
+                delete jsonResponseView.dataset.highlighted;
+                jsonResponseView.className = 'language-json p-4 rounded-lg text-sm';
+                hljs.highlightElement(jsonResponseView);
+                
+                // Enable or disable extract button and search-all toggle
+                const isObject = typeof responseData === 'object' && responseData !== null;
+                const isArray = Array.isArray(responseData);
+                extractJsonBtn.disabled = !isObject;
+                extractSearchAllToggle.disabled = !isArray;
+                if (!isArray) extractSearchAllToggle.checked = false;
+
+
+                switchView(currentView);
+
                 if (!webhookIntervalId) {
                     sendButton.disabled = false;
-                    sendButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg> Send`;
+                    sendButton.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
                 }
             }
         };
@@ -821,13 +946,82 @@
                 sendRequest();
             }
         };
+        
+        // --- JSON Extraction Logic ---
+        const findValuesByPath = (obj, path) => {
+            const keys = path.replace(/\[(\d+)\]/g, '.$1').replace(/\[\*\]/g, '.*').split('.');
+            let results = [];
 
-        // --- Event Listeners (Functionality preserved) ---
+            function search(current, remainingKeys) {
+                if (current === null || current === undefined) return;
+
+                if (!remainingKeys.length) {
+                    results.push(current);
+                    return;
+                }
+
+                const key = remainingKeys[0];
+                const nextKeys = remainingKeys.slice(1);
+
+                if (key === '*') {
+                    if (Array.isArray(current)) {
+                        current.forEach(item => search(item, nextKeys));
+                    }
+                } else if (typeof current === 'object' && key in current) {
+                    search(current[key], nextKeys);
+                }
+            }
+
+            search(obj, keys);
+            return results;
+        };
+        
+        const updateExtractionResults = () => {
+            if (!responseData) return;
+            
+            const paths = extractPathsInput.value.split('\n').filter(p => p.trim() !== '');
+            const searchAll = extractSearchAllToggle.checked;
+            const outputFormat = document.querySelector('input[name="extract-format"]:checked').value;
+            let results = {};
+            
+            if (outputFormat === 'list') {
+                let listResults = [];
+                paths.forEach(path => {
+                    const trimmedPath = path.trim();
+                    if (searchAll && Array.isArray(responseData)) {
+                        responseData.forEach(item => {
+                            listResults.push(...findValuesByPath(item, trimmedPath));
+                        });
+                    } else {
+                        listResults.push(...findValuesByPath(responseData, trimmedPath));
+                    }
+                });
+                extractResultsOutput.textContent = JSON.stringify(listResults, null, 2);
+            } else {
+                paths.forEach(path => {
+                    const trimmedPath = path.trim();
+                    if (searchAll && Array.isArray(responseData)) {
+                        results[trimmedPath] = responseData.map(item => findValuesByPath(item, trimmedPath)).flat();
+                    } else {
+                        results[trimmedPath] = findValuesByPath(responseData, trimmedPath);
+                    }
+                });
+                extractResultsOutput.textContent = JSON.stringify(results, null, 2);
+            }
+            
+            delete extractResultsOutput.dataset.highlighted;
+            extractResultsOutput.className = 'language-json p-4 rounded-lg text-sm overflow-auto h-full';
+            hljs.highlightElement(extractResultsOutput);
+        };
+
+
+        // --- Event Listeners ---
         sendButton.addEventListener('click', handleSendClick);
         addHeaderButton.addEventListener('click', () => createHeaderInput());
         modalImportBtn.addEventListener('click', () => {
             resetCurrentRequest();
             populateFromCurl(curlInput.value);
+            toggleModal(curlModal, false);
         });
         document.querySelectorAll('.response-view-btn').forEach(btn => {
             btn.addEventListener('click', () => switchView(btn.id.replace('view-', '').replace('-btn', '')));
@@ -847,16 +1041,61 @@
             createHeaderInput();
             bodyInput.value = '';
             jsonResponseView.textContent = 'Your API response will appear here...';
+            delete jsonResponseView.dataset.highlighted;
+            jsonResponseView.className = 'language-json p-4 rounded-lg text-sm';
             statusContainer.innerHTML = '';
             metricsContainer.innerHTML = '';
+            extractJsonBtn.disabled = true;
+            extractSearchAllToggle.disabled = true;
+            extractSearchAllToggle.checked = false;
         });
         
         [urlInput, requestTypeSelect, bodyInput].forEach(el => el.addEventListener('input', resetCurrentRequest));
         headersList.addEventListener('input', resetCurrentRequest);
+        
+        bodyWrapToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                bodyInput.classList.add('whitespace-pre-wrap');
+                bodyInput.classList.remove('whitespace-pre');
+            } else {
+                bodyInput.classList.remove('whitespace-pre-wrap');
+                bodyInput.classList.add('whitespace-pre');
+            }
+        });
+        
+        extractPathsInput.addEventListener('input', updateExtractionResults);
+        extractSearchAllToggle.addEventListener('change', updateExtractionResults);
+        document.querySelectorAll('input[name="extract-format"]').forEach(radio => {
+            radio.addEventListener('change', updateExtractionResults);
+        });
+
+        copyExtractResultsBtn.addEventListener('click', () => {
+            const textToCopy = extractResultsOutput.textContent;
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                copyExtractResultsBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            document.body.removeChild(textArea);
+            setTimeout(() => {
+                copyExtractResultsBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
+            }, 2000);
+        });
+
+        clearExtractPathsBtn.addEventListener('click', () => {
+            extractPathsInput.value = '';
+            updateExtractionResults();
+        });
 
         // --- Initial Load ---
         if (headersList.childElementCount === 0) createHeaderInput();
         renderHistory();
+        hljs.highlightAll();
     });
     </script>
 </body>
