@@ -47,7 +47,7 @@ Getting started with the API Client is simple. No complex build steps are requir
     ```bash
     cd api-client
     ```
-3.  **Open `index.html` in your browser**:
+3.  **Open `*.html` in your browser**:
     * You can simply double-click the file to open it locally.
     * For the best experience, use a live server extension in your code editor (like **Live Server for VS Code**) to automatically reload the page on changes.
 
